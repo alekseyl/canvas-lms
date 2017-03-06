@@ -153,4 +153,7 @@ gem 'vericite_api', '1.2.0'
 gem 'utf8_cleaner', path: 'gems/utf8_cleaner'
 gem 'workflow', path: 'gems/workflow'
 
+# my suggestions
 gem 'puma'
+gem 'mina'
+gem 'mina-puma', :require => false
