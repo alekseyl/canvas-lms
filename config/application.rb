@@ -20,6 +20,17 @@ Bundler.require(*Rails.groups)
 
 module CanvasRails
   class Application < Rails::Application
+
+    config.action_mailer.smtp_settings = {
+      :address              => "smtp.office365.com",
+      :port                 => 587,
+      :user_name            => ENV['LETOVO_EMAIL_USER'],
+      :password             => ENV['LETOVO_EMAIL_PWD'],
+      :authentication       => "Login",
+      :enable_starttls_auto => true,
+      domain: 'letovo.ru'
+    }
+
     config.autoload_paths += [config.root.join('lib').to_s]
     $LOAD_PATH << config.root.to_s
     config.encoding = 'utf-8'
