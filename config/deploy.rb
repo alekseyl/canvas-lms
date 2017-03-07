@@ -27,7 +27,7 @@ set :user, 'ubuntu'
 # shared dirs and files will be symlinked into the app-folder by the 'deploy:link_shared_paths' step.
 # set :shared_dirs, fetch(:shared_dirs, []).push('somedir')
 # set :shared_files, fetch(:shared_files, []).push('config/database.yml', 'config/secrets.yml')
-set :shared_dirs, fetch(:shared_dirs, []).push('public/uploads', 'log')
+set :shared_dirs, fetch(:shared_dirs, []).push('public/uploads', 'log', 'node-modules')
 set :shared_files, fetch(:shared_files, []).push('config/database.yml', 'config/security.yml', 'Gemfile.lock')
 
 # This task is the environment that is loaded for all remote run commands, such as
@@ -46,8 +46,22 @@ task :env do
   command %{
     echo "-----> Loading environment"
     #{echo_cmd %[source ~/.bash_profile]}
-        }
+   }
 end
+
+task :env_assets_min do
+  command %{
+    echo "-----> Minimizing assets compilation settings"
+    export COMPILE_ASSETS_API_DOCS=0
+    export COMPILE_ASSETS_STYLEGUIDE=0
+    #{echo_cmd %[source ~/.bash_profile]}
+  }
+  ENV["COMPILE_ASSETS_NPM_INSTALL"] != "0"
+  ENV["COMPILE_ASSETS_CSS"] != "0"
+  ENV["COMPILE_ASSETS_BUILD_JS"] != "0"
+
+end
+
 
 # Put any custom commands you need to run at setup
 # All paths in `shared_dirs` and `shared_paths` will be created on their own.
@@ -104,20 +118,18 @@ task :deploy do
   # uncomment this line to make sure you pushed your local branch to the remote origin
   # invoke :'git:ensure_pushed'
   deploy do
+    set(:bundle_options, -> { %{--without #{fetch(:bundle_withouts)} --path "#{fetch(:bundle_path)}"} } )
     # Put things that will set up an empty directory into a fully set-up
     # instance of your project.
     invoke :'git:clone'
     invoke :'deploy:link_shared_paths'
-    #invoke :'bundle:install'
+    invoke :'bundle:install'
     invoke :'rails:db_migrate'
     invoke :'mina_canvas:compile_assets'
     invoke :'deploy:cleanup'
 
     on :launch do
-      in_path(fetch(:current_path)) do
-        command %{mkdir -p tmp/}
-        command %{touch tmp/restart.txt}
-      end
+
     end
   end
 
@@ -125,7 +137,29 @@ task :deploy do
   # run(:local){ say 'done' }
 end
 
-# попробую работать через touch restart, но на случай ручного перезапуска тоже путь будет вариант.
+task :deploy_fast do
+  # uncomment this line to make sure you pushed your local branch to the remote origin
+  # invoke :'git:ensure_pushed'
+  deploy do
+    set(:bundle_options, -> { %{--without #{fetch(:bundle_withouts)} --path "#{fetch(:bundle_path)}"} } )
+    # Put things that will set up an empty directory into a fully set-up
+    # instance of your project.
+    invoke :'git:clone'
+    invoke :'deploy:link_shared_paths'
+    invoke :'bundle:install'
+    invoke :'rails:db_migrate'
+    invoke :'mina_canvas:compile_assets'
+    invoke :'deploy:cleanup'
+
+    on :launch do
+
+    end
+  end
+
+  # you can use `run :local` to run tasks on local machine before of after the deploy scripts
+  # run(:local){ say 'done' }
+end
+
 task :puma_start do
   on :launch do
     invoke :'puma:restart'

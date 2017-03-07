@@ -48,8 +48,10 @@ namespace :canvas do
     npm_install = ENV["COMPILE_ASSETS_NPM_INSTALL"] != "0"
     compile_css = ENV["COMPILE_ASSETS_CSS"] != "0"
     build_styleguide = ENV["COMPILE_ASSETS_STYLEGUIDE"] != "0"
+    compile_js = ENV["COMPILE_ASSETS_COMPILE_JS"] != "0"
     build_js = ENV["COMPILE_ASSETS_BUILD_JS"] != "0"
     build_api_docs = ENV["COMPILE_ASSETS_API_DOCS"] != "0"
+    gulp_js = ENV["COMPILE_ASSETS_GULP_APART_FROM_JS"] != "0"
 
     # opt in
     webpack_and_rjs = ENV["COMPILE_ASSETS_WEBPACK_RJS_FALLBACK"] == "1"
@@ -77,30 +79,35 @@ namespace :canvas do
     end
 
     # TODO: Once webpack is the only way, remove js:build
-    if CANVAS_WEBPACK
-      build_js_msg = build_js ? ", js 18n, run webpack" : ""
-      msg = webpack_and_rjs ? ", r.js optimizer" : ""
-      tasks["compile coffee/jsx#{build_js_msg}#{msg}"] = -> {
-        log_time('js:generate') { Rake::Task['js:generate'].invoke }
-        if build_js
-          log_time('i18n:generate_js') { Rake::Task['i18n:generate_js'].invoke }
-          ptasks = ['js:webpack']
-          ptasks << 'js:build' if webpack_and_rjs
-          # webpack and js:build can run concurrently
-          Parallel.each(ptasks, in_threads: parallel_processes) do |name|
-            log_time(name) { Rake::Task[name].invoke }
+    if compile_js
+      if CANVAS_WEBPACK
+        build_js_msg = build_js ? ", js 18n, run webpack" : ""
+        msg = webpack_and_rjs ? ", r.js optimizer" : ""
+        tasks["compile coffee/jsx#{build_js_msg}#{msg}"] = -> {
+          log_time('js:generate') { Rake::Task['js:generate'].invoke }
+          if build_js
+            log_time('i18n:generate_js') { Rake::Task['i18n:generate_js'].invoke }
+            ptasks = ['js:webpack']
+            ptasks << 'js:build' if webpack_and_rjs
+            # webpack and js:build can run concurrently
+            Parallel.each(ptasks, in_threads: parallel_processes) do |name|
+              log_time(name) { Rake::Task[name].invoke }
+            end
           end
-        end
-      }
+        }
+      else
+        msg = build_js ? ", js i18n, r.js optimizer" : ""
+        #if skip_js
+        tasks["compile coffee/jsx#{msg}"] = -> {
+          log_time('js:generate') { Rake::Task['js:generate'].invoke }
+          if build_js
+            log_time('i18n:generate_js') { Rake::Task['i18n:generate_js'].invoke }
+            log_time('js:build') { Rake::Task['js:build'].invoke }
+          end
+        }
+      end
     else
-      msg = build_js ? ", js i18n, r.js optimizer" : ""
-      tasks["compile coffee/jsx#{msg}"] = -> {
-        log_time('js:generate') { Rake::Task['js:generate'].invoke }
-        if build_js
-          log_time('i18n:generate_js') { Rake::Task['i18n:generate_js'].invoke }
-          log_time('js:build') { Rake::Task['js:build'].invoke }
-        end
-      }
+      puts "Skip js compilation"
     end
 
     if build_api_docs
@@ -118,7 +125,9 @@ namespace :canvas do
     combined_time = times.reduce(:+)
     puts "Finished compiling assets in #{real_time}. parallelism saved #{combined_time - real_time} (#{real_time.to_f / combined_time.to_f * 100.0}%)"
 
-    log_time("gulp rev") { Rake::Task['js:gulp_rev'].invoke }
+    if compile_js || gulp_js
+      log_time("gulp rev") { Rake::Task['js:gulp_rev'].invoke }
+    end
   end
 
   desc "Just compile css and js for development"
