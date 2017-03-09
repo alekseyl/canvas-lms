@@ -29,6 +29,8 @@ set :user, 'ubuntu'
 # set :shared_files, fetch(:shared_files, []).push('config/database.yml', 'config/secrets.yml')
 set :shared_dirs, fetch(:shared_dirs, []).push('public/uploads', 'log', 'node-modules')
 set :shared_files, fetch(:shared_files, []).push('config/database.yml', 'config/security.yml', 'Gemfile.lock')
+# ,
+#                                                  'app/coffeescripts/ember/screenreader_gradebook/main.coffee')
 
 # This task is the environment that is loaded for all remote run commands, such as
 # `mina deploy` or `mina rake`.
