@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source ~/.bash_profile
 # TODO: improve usage / help
 function usage {
   echo "usage: canvas_update [[[-q]] | [-h]]"

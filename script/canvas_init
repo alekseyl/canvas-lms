@@ -9,6 +9,7 @@
 # Short-Description:	Start/stop Canvas background jobs
 ### END INIT INFO
 
+source ~/.bash_profile
 set -e
 
 # drop privs if necessary
