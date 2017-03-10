@@ -96,7 +96,7 @@ def check_for_changes_script_separated(options)
             --exclude="dist"
             "#{fetch(:current_path)}/#{path}" "./#{path}" 2>/dev/null}
     elsif path == 'client_apps'
-      %{diff -rqN --exclude='main.coffee' "#{fetch(:current_path)}/#{path}" "./#{path}" 2>/dev/null}
+      %{diff -rqN --no-dereference --exclude='main.coffee' "#{fetch(:current_path)}/#{path}" "./#{path}" 2>/dev/null}
     else
       %{diff -qrN --no-dereference "#{fetch(:current_path)}/#{path}" "./#{path}" 2>/dev/null}
     end

@@ -28,7 +28,7 @@ set :user, 'ubuntu'
 # set :shared_dirs, fetch(:shared_dirs, []).push('somedir')
 # set :shared_files, fetch(:shared_files, []).push('config/database.yml', 'config/secrets.yml')
 set :shared_dirs, fetch(:shared_dirs, []).push('public/uploads', 'log', 'node-modules')
-set :shared_files, fetch(:shared_files, []).push('config/database.yml', 'config/security.yml', 'Gemfile.lock')
+set :shared_files, fetch(:shared_files, []).push('config/delayed_jobs.yml', 'config/database.yml', 'config/security.yml', 'Gemfile.lock')
 # ,
 #                                                  'app/coffeescripts/ember/screenreader_gradebook/main.coffee')
 
@@ -77,6 +77,7 @@ task :setup do
   command %[touch "#{fetch(:shared_path)}/Gemfile.lock"]
   command %[touch "#{fetch(:shared_path)}/config/database.yml"]
   command %[touch "#{fetch(:shared_path)}/config/security.yml"]
+  command %[touch "#{fetch(:shared_path)}/config/delayed_jobs.yml"]
   command  %[echo "-----> Be sure to edit '#{fetch(:shared_path)}/config/database.yml' and 'security.yml'."]
 
 
@@ -117,6 +118,7 @@ end
 
 desc "Deploys the current version to the server."
 task :deploy do
+  set :force_asset_precompile, true
   # uncomment this line to make sure you pushed your local branch to the remote origin
   # invoke :'git:ensure_pushed'
   deploy do
@@ -131,7 +133,7 @@ task :deploy do
     invoke :'deploy:cleanup'
 
     on :launch do
-
+      invoke :puma_start
     end
   end
 
@@ -139,7 +141,7 @@ task :deploy do
   # run(:local){ say 'done' }
 end
 
-task :deploy_fast do
+task :fast_deploy do
   # uncomment this line to make sure you pushed your local branch to the remote origin
   # invoke :'git:ensure_pushed'
   deploy do
@@ -154,7 +156,7 @@ task :deploy_fast do
     invoke :'deploy:cleanup'
 
     on :launch do
-
+      invoke :puma_start
     end
   end
 
@@ -163,9 +165,8 @@ task :deploy_fast do
 end
 
 task :puma_start do
-  on :launch do
-    invoke :'puma:restart'
-  end
+    invoke :'puma:stop'
+    invoke :'puma:start'
 end
 
 # For help in making your deploy script, see the Mina documentation:
