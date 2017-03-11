@@ -118,7 +118,6 @@ end
 
 desc "Deploys the current version to the server."
 task :deploy do
-  set :force_asset_precompile, true
   # uncomment this line to make sure you pushed your local branch to the remote origin
   # invoke :'git:ensure_pushed'
   deploy do
@@ -129,11 +128,14 @@ task :deploy do
     invoke :'deploy:link_shared_paths'
     invoke :'bundle:install'
     invoke :'rails:db_migrate'
-    invoke :'mina_canvas:compile_assets'
+
+    comment %{Precompiling asset files}
+    command %{#{fetch(:rake)} canvas:compile_assets}
+
     invoke :'deploy:cleanup'
 
     on :launch do
-      invoke :puma_start
+      invoke :'puma:phased_restart'
     end
   end
 
@@ -152,11 +154,10 @@ task :fast_deploy do
     invoke :'deploy:link_shared_paths'
     invoke :'bundle:install'
     invoke :'rails:db_migrate'
-    invoke :'mina_canvas:compile_assets'
     invoke :'deploy:cleanup'
 
     on :launch do
-      invoke :puma_start
+      invoke :'puma:phased_restart'
     end
   end
 

@@ -28,7 +28,6 @@ set :separated_assets_dirs, {
                               },
                               js: { dirs: %w( package.json
                                               .bowerrc
-                                              client_apps
                                               config/build.js.erb
                                               app/jsx
                                               public/javascripts
