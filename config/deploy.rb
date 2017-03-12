@@ -174,6 +174,15 @@ task :puma_start do
     invoke :'puma:start'
 end
 
+
+task :puma_start_local do
+  run :local do
+    invoke :'puma:stop'
+    invoke :'puma:start'
+  end
+end
+
+
 # For help in making your deploy script, see the Mina documentation:
 #
 #  - https://github.com/mina-deploy/mina/tree/master/docs
