@@ -19,6 +19,10 @@ set :repository, 'git@github.com:alekseyl/canvas-lms.git'
 set :branch, 'stable'
 set :user, 'ubuntu'
 
+task :local_run do
+  set :domain, 'localhost'
+end
+
 # Optional settings:
 #   set :user, 'foobar'          # Username in the server to SSH to.
 #   set :port, '30000'           # SSH port number.
@@ -173,6 +177,8 @@ end
 
 task :puma_start_local do
   run :local do
+    invoke :'rvm:use', 'ruby-2.3.3@canvas-letovo'
+    invoke :'env'
     invoke :'puma:stop'
     invoke :'puma:start'
   end
