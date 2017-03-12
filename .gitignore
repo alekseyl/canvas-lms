@@ -14,7 +14,6 @@
 .byebug_history
 .env
 /.yardoc/
-/.ruby-version
 /app/coffeescripts/ember/*/main.coffee
 /app/coffeescripts/ember/screenreader_gradebook/templates/**/*.js
 /app/views/info/styleguide.html.erb
