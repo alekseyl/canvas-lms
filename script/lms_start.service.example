@@ -1,0 +1,17 @@
+[Timer]
+OnStartupSec=30
+
+[Unit]
+Description=LMS startup service
+Requires=network.target
+Requires=nginx.service
+Requires=postgresql.service
+
+[Service]
+Type=forking
+User=ubuntu
+ExecStart=/bin/bash -l -c 'source /home/ubuntu/.bash_profile && cd /home/ubuntu/app/canvas-letovo/current && mina local_run puma_start'
+
+[Install]
+WantedBy=multi-user.target
+
