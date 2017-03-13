@@ -1,6 +1,3 @@
-[Timer]
-OnStartupSec=30
-
 [Unit]
 Description=LMS startup service
 Requires=network.target
