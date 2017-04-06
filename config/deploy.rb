@@ -32,7 +32,9 @@ end
 # set :shared_dirs, fetch(:shared_dirs, []).push('somedir')
 # set :shared_files, fetch(:shared_files, []).push('config/database.yml', 'config/secrets.yml')
 set :shared_dirs, fetch(:shared_dirs, []).push('public/uploads', 'log', 'node_modules')
-set :shared_files, fetch(:shared_files, []).push( 'config/outgoing_mail.yml', 'config/delayed_jobs.yml', 'config/domain.yml', 'config/database.yml', 'config/security.yml', 'Gemfile.lock')
+set :shared_files, fetch(:shared_files, []).push( 'config/outgoing_mail.yml', 'config/delayed_jobs.yml',
+                                                  'config/domain.yml', 'config/database.yml', 'config/security.yml', 'Gemfile.lock')
+
 # 'app/coffeescripts/ember/screenreader_gradebook/main.coffee')
 
 # This task is the environment that is loaded for all remote run commands, such as
@@ -64,7 +66,6 @@ task :env_assets_min do
   ENV["COMPILE_ASSETS_NPM_INSTALL"] != "0"
   ENV["COMPILE_ASSETS_CSS"] != "0"
   ENV["COMPILE_ASSETS_BUILD_JS"] != "0"
-
 end
 
 
@@ -81,7 +82,8 @@ task :setup do
   command %[touch "#{fetch(:shared_path)}/config/database.yml"]
   command %[touch "#{fetch(:shared_path)}/config/security.yml"]
   command %[touch "#{fetch(:shared_path)}/config/delayed_jobs.yml"]
-  command  %[echo "-----> Be sure to edit '#{fetch(:shared_path)}/config/database.yml' and 'security.yml'."]
+  command %[touch "#{fetch(:shared_path)}/config/outgoing_mail.yml"]
+  command  %[echo "-----> Be sure to edit '#{fetch(:shared_path)}/config/database.yml', 'security.yml', 'delayed_jobs.yml' and 'outgoing_mail.yml' ."]
 
 
   # Puma needs a place to store its pid file and socket file.
@@ -139,28 +141,7 @@ task :deploy do
 
     on :launch do
       invoke :'puma:phased_restart'
-    end
-  end
-
-  # you can use `run :local` to run tasks on local machine before of after the deploy scripts
-  # run(:local){ say 'done' }
-end
-
-task :fast_deploy do
-  # uncomment this line to make sure you pushed your local branch to the remote origin
-  # invoke :'git:ensure_pushed'
-  deploy do
-    set(:bundle_options, -> { %{--without #{fetch(:bundle_withouts)} --path "#{fetch(:bundle_path)}"} } )
-    # Put things that will set up an empty directory into a fully set-up
-    # instance of your project.
-    invoke :'git:clone'
-    invoke :'deploy:link_shared_paths'
-    invoke :'bundle:install'
-    invoke :'rails:db_migrate'
-    invoke :'deploy:cleanup'
-
-    on :launch do
-      invoke :'puma:phased_restart'
+      command %{ script/canvas_init restart }
     end
   end
 
@@ -173,18 +154,5 @@ task :puma_start do
     invoke :'puma:start'
 end
 
-
-task :puma_start_local do
-  run :local do
-    invoke :'rvm:use', 'ruby-2.3.3@canvas-letovo'
-    invoke :'env'
-    invoke :'puma:stop'
-    invoke :'puma:start'
-  end
-end
-
-
 # For help in making your deploy script, see the Mina documentation:
-#
-#  - https://github.com/mina-deploy/mina/tree/master/docs
 #puma -q -d -e production -S /home/ubuntu/puma/sockets/puma.state -b 'unix:///home/ubuntu/puma/sockets/puma.sock' --control 'unix:///home/ubuntu/puma/sockets/pumactl.sock'
